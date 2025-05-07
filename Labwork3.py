@@ -53,10 +53,17 @@ def gradient_descent(salary, experience, loan, lr, iterations):
 
     for epoch in range(iterations):
         grad0, grad1, grad2 = 0.0, 0.0, 0.0
+        gamma = 2.0
+        alpha = 1.0
         for i in range(m):
             z = w0 + w1 * salary[i] + w2 * experience[i]
-            h = sigmoid(z)
-            error = h - loan[i]
+            p = sigmoid(z)  # Predicted probability
+            p_t = p if loan[i] == 1 else 1 - p  # True class probability
+
+            # Focal loss weight
+            weight = alpha * (1 - p_t) ** gamma
+            error = weight * (-loan[i] + p) / (p_t)  # Gradient term
+
             grad0 += error
             grad1 += error * salary[i]
             grad2 += error * experience[i]
