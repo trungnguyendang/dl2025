@@ -33,6 +33,20 @@ def compute_lost(w0, w1, w2, salary, experience, loan):
         cost += - (loan[i] * math.log(h) + (1 - loan[i]) * math.log(1 - h))
     return cost / m
 
+def compute_focal_loss(w0, w1, w2, salary, experience, loan):
+    gamma = 2.0
+    alpha = 1.0
+    m = len(loan)
+    total_loss = 0.0
+    for i in range(m):
+        z = w0 + w1 * salary[i] + w2 * experience[i]
+        p = sigmoid(z)
+        p_t = p if loan[i] == 1 else 1 - p
+        weight = alpha * (1 - p_t) ** gamma
+        loss = -weight * math.log(p_t)
+        total_loss += loss
+    return total_loss / m
+
 def gradient_descent(salary, experience, loan, lr, iterations):
     m = len(loan)
     w0, w1, w2 = 0.0, 0.0, 0.0
@@ -55,7 +69,7 @@ def gradient_descent(salary, experience, loan, lr, iterations):
         w1 -= lr * grad1
         w2 -= lr * grad2
 
-        loss = compute_lost(w0, w1, w2, salary, experience, loan)
+        loss = compute_focal_loss(w0, w1, w2, salary, experience, loan)
         print(f"Iter {epoch}/{iterations}: w0={w0:.4f}, w1={w1:.4f}, w2={w2:.4f}, loss={loss:.4f}")
 
     return w0, w1, w2
